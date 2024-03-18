@@ -1,45 +1,42 @@
-import { openDB } from 'idb';
+import { openDB } from "idb";
 
-const initdb = async () =>
-  openDB('jate', 1, {
+export const initdb = async () =>
+  openDB("jate", 1, {
     upgrade(db) {
-      if (db.objectStoreNames.contains('jate')) {
-        console.log('jate database already exists');
+      if (db.objectStoreNames.contains("jate")) {
+        console.log("jate database already exists");
         return;
       }
-      db.createObjectStore('jate', { keyPath: 'id', autoIncrement: true });
-      console.log('jate database created');
+      db.createObjectStore("jate", { keyPath: "id", autoIncrement: true });
+      console.log("jate database created");
     },
   });
 
 // Logic to add content to the database
 export const putDb = async (content) => {
-  const db = await initdb();
-  const tx = db.transaction('jate', 'readwrite');
-  const store = tx.objectStore('jate');
-  const id = await store.add({ content });
-  await tx.complete;
-  return id;
+  console.log("Post to JATE");
+  const jateDb = await openDb("jate", 1);
+  const tx = jateDb.transaction("jate", "readwrite");
+  const store = tx.objectStore("jate");
+  const request = store.add({ content: content });
+  const result = await request;
+  console.log("New data saved to DB", result);
 };
 
 // Logic to get all content from the database
 export const getDb = async () => {
-  const db = await initdb();
-  const tx = db.transaction('jate', 'readonly');
-  const store = tx.objectStore('jate');
-  const content = await store.getAll();
-  return content;
-};
-
-
-// Logic to delete all content from the database
-export const deleteAllDb = async () => {
-  const db = await initdb();
-  const tx = db.transaction('jate', 'readwrite');
-  const store = tx.objectStore('jate');
-  await store.clear();
-  await tx.complete;
-  console.log('All content deleted from the database');
+  console.log("Get all content from the DB");
+  const jateDb = await openDb("jate", 1);
+  const tx = jateDb.transaction("jate", "readonly");
+  const store = tx.objectStore("jate");
+  const request = store.getAll();
+  const result = await request;
+  if (result.length) {
+    console.log("result.value", result);
+    return result;
+  } else {
+    console.log("Error! No result has been found.");
+  };
 };
 
 initdb();
